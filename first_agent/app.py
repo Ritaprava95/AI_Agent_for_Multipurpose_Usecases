@@ -1,8 +1,10 @@
-from smolagents import CodeAgent, DuckDuckGoSearchTool, FinalAnswerTool, InferenceClientModel, load_tool, tool
+from smolagents import CodeAgent, ToolCallingAgent, DuckDuckGoSearchTool, FinalAnswerTool, HfApiModel, load_tool, tool
 import datetime
 import requests
 import pytz
 import yaml
+
+from Gradio_UI import GradioUI
 
 print('hemlo')
 
@@ -33,27 +35,29 @@ def get_current_time_in_timezone(timezone: str) -> str:
 
 
 final_answer = FinalAnswerTool()
-model = InferenceClientModel(
+model = HfApiModel(
     max_tokens=2096,
     temperature=0.5,
     model_id='Qwen/Qwen2.5-Coder-32B-Instruct',
     custom_role_conversions=None,
 )
 
-with open("prompts.yaml", 'r') as stream:
+with open("system_prompt.yaml", 'r') as stream:
     prompt_templates = yaml.safe_load(stream)
+
+# print(prompt_templates)
 
 # We're creating our CodeAgent
 agent = CodeAgent(
     model=model,
-    tools=[final_answer],  # add your tools here (don't remove final_answer)
+    tools=[get_current_time_in_timezone, final_answer],  # add your tools here (don't remove final_answer)
     max_steps=6,
     verbosity_level=1,
-    grammar=None,
+    # grammar=None,
     planning_interval=None,
     name=None,
     description=None,
     prompt_templates=prompt_templates
 )
 
-GradioUI(agent).launch()
+# GradioUI(agent).launch()
