@@ -1,3 +1,4 @@
+from email.message import EmailMessage
 from smolagents import CodeAgent, ToolCallingAgent, DuckDuckGoSearchTool, FinalAnswerTool, HfApiModel, load_tool, tool
 import datetime
 import requests
@@ -6,17 +7,30 @@ import yaml
 
 from Gradio_UI import GradioUI
 
-print('hemlo')
+# print('hemlo')
 
 @tool
-def my_custom_tool(arg1:str, arg2:int)-> str: # it's important to specify the return type
+def add_number(arg1:int, arg2:int)-> str: # it's important to specify the return type
     # Keep this format for the tool description / args description but feel free to modify the tool
-    """A tool that does nothing yet
+    """ a tool that adds 2 numbers
     Args:
         arg1: the first argument
         arg2: the second argument
     """
-    return "What magic will you build ?"
+    return f"Addition of arg1and arg2 is {arg1+arg2}"
+
+@tool
+def write_email(topic:str, receiver:str, sender:str)->str:
+    """ a tool that writes an email and returns the message
+    Args:
+        topic: the topic of the email
+        receiver: the receiver of the email
+        sender: the sender of the email
+    """
+    sub = topic
+    msg = f"\nHi {receiver.split('@')[0]},\n\n{topic}\n\nRegards,\n{sender.split('@')[0]}"
+    return msg
+
 
 @tool
 def get_current_time_in_timezone(timezone: str) -> str:
@@ -50,7 +64,7 @@ with open("system_prompt.yaml", 'r') as stream:
 # We're creating our CodeAgent
 agent = CodeAgent(
     model=model,
-    tools=[get_current_time_in_timezone, final_answer],  # add your tools here (don't remove final_answer)
+    tools=[add_number, write_email, get_current_time_in_timezone, final_answer],  # add your tools here (don't remove final_answer)
     max_steps=6,
     verbosity_level=1,
     # grammar=None,
@@ -60,4 +74,4 @@ agent = CodeAgent(
     prompt_templates=prompt_templates
 )
 
-# GradioUI(agent).launch()
+GradioUI(agent).launch()
